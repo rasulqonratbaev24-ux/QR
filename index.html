@@ -2,174 +2,142 @@
 <html lang="uz">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Krossvord</title>
+<title>Real Krossvord</title>
 
 <style>
 body{
     font-family:Arial;
-    background:linear-gradient(135deg,#74ebd5,#acb6e5);
+    background:linear-gradient(135deg,#667eea,#764ba2);
     text-align:center;
-    padding:20px;
+    color:white;
 }
 
 h1{
-    color:white;
     text-shadow:2px 2px 5px black;
 }
 
-.board{
+.grid{
     display:grid;
-    grid-template-columns:repeat(10,45px);
+    grid-template-columns:repeat(11,40px);
     justify-content:center;
-    gap:3px;
+    gap:2px;
     margin-top:20px;
 }
 
 .cell{
-    width:45px;
-    height:45px;
+    width:40px;
+    height:40px;
     text-align:center;
     font-size:20px;
     font-weight:bold;
     text-transform:uppercase;
-    border-radius:6px;
-    border:2px solid #fff;
+    border-radius:5px;
+    border:1px solid #fff;
 }
 
-.empty{
-    background:#333;
+.block{
+    background:#222;
+    border:none;
 }
 
-.correct{background:#2ecc71;color:white;}
-.wrong{background:#e74c3c;color:white;}
+.correct{background:#2ecc71;}
+.wrong{background:#e74c3c;}
 
-.controls{
+.panel{
     margin-top:20px;
+    background:white;
+    color:black;
+    display:inline-block;
+    padding:15px;
+    border-radius:10px;
+    text-align:left;
 }
 
 button{
     margin:5px;
-    padding:10px 15px;
+    padding:8px 12px;
     border:none;
     border-radius:8px;
     cursor:pointer;
     background:#6c5ce7;
     color:white;
 }
-
-button:hover{
-    background:#341f97;
-}
-
-.panel{
-    background:white;
-    display:inline-block;
-    padding:15px;
-    margin-top:20px;
-    border-radius:10px;
-    text-align:left;
-}
 </style>
 </head>
 
 <body>
 
-<h1>🎯 PRO KROSSVORD</h1>
+<h1>🎯 REAL KROSSVORD</h1>
 
-<div class="board" id="board"></div>
+<div class="grid" id="grid"></div>
 
 <div class="panel">
 <h3>Savollar</h3>
-<p>1. Messi</p>
-<p>2. Toshkent</p>
-<p>3. ChatGPT</p>
-<p>4. Youtube</p>
-<p>5. Yupiter</p>
 
-<div class="controls">
-<button onclick="checkOne(0)">1-savol</button>
-<button onclick="checkOne(1)">2-savol</button>
-<button onclick="checkOne(2)">3-savol</button>
-<button onclick="checkOne(3)">4-savol</button>
-<button onclick="checkOne(4)">5-savol</button>
+<div>1. Messi <button onclick="check(0)">Tekshir</button></div>
+<div>2. Toshkent <button onclick="check(1)">Tekshir</button></div>
+<div>3. ChatGPT <button onclick="check(2)">Tekshir</button></div>
+
 <button onclick="checkAll()">Hammasi</button>
-</div>
 </div>
 
 <script>
 
-const size = 10;
+const size = 11;
 
-const grid = Array(size).fill().map(()=>Array(size).fill(""));
+// bo'sh grid
+let grid = Array(size).fill().map(()=>Array(size).fill(""));
 
 const words = [
-{word:"MESSI", row:0, col:0, dir:"across"},
-{word:"TOSHKENT", row:0, col:0, dir:"down"},
-{word:"CHATGPT", row:2, col:2, dir:"across"},
-{word:"YOUTUBE", row:4, col:1, dir:"across"},
-{word:"YUPITER", row:1, col:5, dir:"down"}
+{word:"MESSI", row:5, col:2, dir:"across"},
+{word:"TOSHKENT", row:0, col:4, dir:"down"},
+{word:"CHATGPT", row:2, col:0, dir:"across"}
 ];
 
 // joylashtirish
-words.forEach(w=>{
+words.forEach((w,wi)=>{
     for(let i=0;i<w.word.length;i++){
         if(w.dir==="across"){
-            grid[w.row][w.col+i]=w.word[i];
+            grid[w.row][w.col+i] = {ch:w.word[i], id:wi};
         }else{
-            grid[w.row+i][w.col]=w.word[i];
+            grid[w.row+i][w.col] = {ch:w.word[i], id:wi};
         }
     }
 });
 
-const board=document.getElementById("board");
+const gridDiv = document.getElementById("grid");
 
-let inputs=[];
-
-// chizish
+// render
 for(let r=0;r<size;r++){
     for(let c=0;c<size;c++){
 
-        if(grid[r][c]===""){
-            let div=document.createElement("div");
-            div.className="cell empty";
-            board.appendChild(div);
+        let cell = document.createElement("input");
+        cell.className="cell";
+
+        if(!grid[r][c]){
+            cell.className="cell block";
+            cell.disabled=true;
         }else{
-            let input=document.createElement("input");
-            input.className="cell";
-            input.maxLength=1;
-            input.dataset.answer=grid[r][c];
+            cell.dataset.answer = grid[r][c].ch;
+            cell.dataset.word = grid[r][c].id;
 
-            input.dataset.wordIndex=getWordIndex(r,c);
-
-            input.oninput=()=>input.value=input.value.toUpperCase();
-
-            board.appendChild(input);
-            inputs.push(input);
-        }
-    }
-}
-
-// qaysi so‘zga tegishli
-function getWordIndex(r,c){
-    for(let i=0;i<words.length;i++){
-        let w=words[i];
-        for(let j=0;j<w.word.length;j++){
-            if(w.dir==="across"){
-                if(r===w.row && c===w.col+j) return i;
-            }else{
-                if(r===w.row+j && c===w.col) return i;
+            cell.oninput=()=>{
+                cell.value = cell.value.toUpperCase();
             }
         }
+
+        gridDiv.appendChild(cell);
     }
-    return -1;
 }
 
-// bittalab tekshirish
-function checkOne(index){
+// bittalik tekshiruv
+function check(index){
+
+    let inputs = document.querySelectorAll("input");
+
     inputs.forEach(inp=>{
-        if(Number(inp.dataset.wordIndex)===index){
-            if(inp.value===inp.dataset.answer){
+        if(inp.dataset.word == index){
+            if(inp.value === inp.dataset.answer){
                 inp.classList.add("correct");
                 inp.classList.remove("wrong");
             }else{
@@ -182,13 +150,18 @@ function checkOne(index){
 
 // hammasini tekshirish
 function checkAll(){
+
+    let inputs = document.querySelectorAll("input");
+
     inputs.forEach(inp=>{
-        if(inp.value===inp.dataset.answer){
-            inp.classList.add("correct");
-            inp.classList.remove("wrong");
-        }else{
-            inp.classList.add("wrong");
-            inp.classList.remove("correct");
+        if(inp.dataset.answer){
+            if(inp.value === inp.dataset.answer){
+                inp.classList.add("correct");
+                inp.classList.remove("wrong");
+            }else{
+                inp.classList.add("wrong");
+                inp.classList.remove("correct");
+            }
         }
     });
 }
