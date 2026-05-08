@@ -3,189 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Krossvord O'yini</title>
+<title>Rangli Krossvord</title>
 
 <style>
-    body{
-        font-family: Arial;
-        background:#f2f2f2;
-        text-align:center;
-        padding:20px;
-    }
+body{
+    font-family:Arial;
+    background:linear-gradient(135deg,#ff9a9e,#fad0c4,#a18cd1);
+    min-height:100vh;
+    text-align:center;
+    padding:20px;
+}
 
-    h1{
-        color:#333;
-    }
+h1{
+    color:white;
+    text-shadow:2px 2px 5px black;
+}
 
-    .crossword{
-        display:flex;
-        flex-direction:column;
-        gap:10px;
-        margin:auto;
-        width:max-content;
-    }
+.crossword{
+    display:grid;
+    grid-template-columns:repeat(15,45px);
+    gap:4px;
+    justify-content:center;
+    margin-top:30px;
+}
 
-    .word{
-        display:flex;
-        align-items:center;
-        gap:10px;
-    }
+.cell{
+    width:45px;
+    height:45px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+    text-transform:uppercase;
+    border:2px solid white;
+    border-radius:8px;
+    background:white;
+}
 
-    .number{
-        width:30px;
-        font-weight:bold;
-    }
+.black{
+    background:#333;
+    border:none;
+}
 
-    .cells{
-        display:flex;
-        gap:3px;
-    }
+.correct{
+    background:#4CAF50 !important;
+    color:white;
+}
 
-    input{
-        width:35px;
-        height:35px;
-        text-align:center;
-        font-size:20px;
-        text-transform:uppercase;
-        border:2px solid #888;
-        border-radius:5px;
-    }
+.wrong{
+    background:#ff4d4d !important;
+    color:white;
+}
 
-    button{
-        margin-top:20px;
-        padding:12px 25px;
-        font-size:18px;
-        background:green;
-        color:white;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-    }
+.info{
+    margin-top:30px;
+    background:white;
+    display:inline-block;
+    padding:20px;
+    border-radius:15px;
+    text-align:left;
+    max-width:700px;
+}
 
-    button:hover{
-        background:darkgreen;
-    }
+button{
+    margin-top:20px;
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+    background:#673ab7;
+    color:white;
+}
 
-    .correct{
-        background:#7CFC90;
-    }
+button:hover{
+    background:#512da8;
+}
 
-    .wrong{
-        background:#ff7b7b;
-    }
-
-    .question{
-        text-align:left;
-        margin-top:30px;
-        max-width:700px;
-        margin-left:auto;
-        margin-right:auto;
-        background:white;
-        padding:15px;
-        border-radius:10px;
-    }
+.wordTitle{
+    color:#673ab7;
+    font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
-<h1>KROSSVORD O'YINI</h1>
+<h1>🎯 RANGLI KROSSVORD</h1>
 
-<div class="crossword" id="crossword"></div>
+<div class="crossword" id="board"></div>
 
-<button onclick="checkAnswers()">Tekshirish</button>
+<div class="info">
+<h2>Savollar</h2>
 
-<div class="question">
-<h3>Savollar:</h3>
-<div id="questions"></div>
+<p><span class="wordTitle">1.</span> Eng mashhur futbolchi</p>
+<p><span class="wordTitle">2.</span> O'zbekiston poytaxti</p>
+<p><span class="wordTitle">3.</span> Sun'iy intellekt</p>
+<p><span class="wordTitle">4.</span> Video platforma</p>
+<p><span class="wordTitle">5.</span> Eng katta sayyora</p>
+
+<button onclick="checkCrossword()">Tekshirish</button>
 </div>
 
 <script>
 
+const size = 15;
+
+const board = Array(size).fill().map(()=>Array(size).fill(""));
+
 const words = [
-    {question:"1. Eng mashhur futbolchi", answer:"MESSI"},
-    {question:"2. O'zbekiston poytaxti", answer:"TOSHKENT"},
-    {question:"3. Eng katta sayyora", answer:"YUPITER"},
-    {question:"4. Futbol o'yini", answer:"FUTBOL"},
-    {question:"5. Kompyuter miyasi", answer:"PROTSESSOR"},
-    {question:"6. Telefon turi", answer:"SMARTFON"},
-    {question:"7. Internet tarmog'i", answer:"WIFI"},
-    {question:"8. Eng tez hayvon", answer:"GEPARD"},
-    {question:"9. Dasturlash tili", answer:"PYTHON"},
-    {question:"10. Mashhur kompaniya", answer:"APPLE"},
-    {question:"11. Okean turi", answer:"TINCH"},
-    {question:"12. O'qish joyi", answer:"MAKTAB"},
-    {question:"13. Yer yo'ldoshi", answer:"OY"},
-    {question:"14. Qishda yog'adi", answer:"QOR"},
-    {question:"15. Transport vositasi", answer:"MASHINA"},
-    {question:"16. Elektron pochta", answer:"EMAIL"},
-    {question:"17. Video platforma", answer:"YOUTUBE"},
-    {question:"18. Ijtimoiy tarmoq", answer:"INSTAGRAM"},
-    {question:"19. Futbol klubi", answer:"BARSELONA"},
-    {question:"20. Sun'iy intellekt", answer:"CHATGPT"}
+{
+    word:"MESSI",
+    row:1,
+    col:1,
+    dir:"across"
+},
+{
+    word:"TOSHKENT",
+    row:1,
+    col:3,
+    dir:"down"
+},
+{
+    word:"CHATGPT",
+    row:5,
+    col:2,
+    dir:"across"
+},
+{
+    word:"YOUTUBE",
+    row:3,
+    col:8,
+    dir:"down"
+},
+{
+    word:"YUPITER",
+    row:10,
+    col:4,
+    dir:"across"
+}
 ];
 
-const crossword = document.getElementById("crossword");
-const questionsDiv = document.getElementById("questions");
+words.forEach(item=>{
 
-words.forEach((wordObj,index)=>{
+    for(let i=0;i<item.word.length;i++){
 
-    const wordDiv = document.createElement("div");
-    wordDiv.className = "word";
+        let r=item.row;
+        let c=item.col;
 
-    const number = document.createElement("div");
-    number.className = "number";
-    number.innerText = index+1;
+        if(item.dir==="across"){
+            c+=i;
+        }else{
+            r+=i;
+        }
 
-    const cells = document.createElement("div");
-    cells.className = "cells";
-
-    for(let i=0;i<wordObj.answer.length;i++){
-
-        const input = document.createElement("input");
-
-        input.maxLength = 1;
-
-        input.dataset.answer = wordObj.answer[i];
-
-        input.addEventListener("input",function(){
-
-            this.value = this.value.toUpperCase();
-
-            if(this.value.length === 1){
-                const next = this.nextElementSibling;
-                if(next){
-                    next.focus();
-                }
-            }
-
-        });
-
-        cells.appendChild(input);
+        board[r][c]=item.word[i];
     }
-
-    wordDiv.appendChild(number);
-    wordDiv.appendChild(cells);
-
-    crossword.appendChild(wordDiv);
-
-    questionsDiv.innerHTML += `<p>${wordObj.question}</p>`;
 
 });
 
-function checkAnswers(){
+const boardDiv=document.getElementById("board");
 
-    const allInputs = document.querySelectorAll("input");
+for(let r=0;r<size;r++){
 
-    allInputs.forEach(input=>{
+    for(let c=0;c<size;c++){
 
-        if(input.value === input.dataset.answer){
+        if(board[r][c]===""){
+
+            const black=document.createElement("div");
+            black.className="cell black";
+            boardDiv.appendChild(black);
+
+        }else{
+
+            const input=document.createElement("input");
+
+            input.className="cell";
+
+            input.maxLength=1;
+
+            input.dataset.answer=board[r][c];
+
+            input.addEventListener("input",function(){
+
+                this.value=this.value.toUpperCase();
+
+            });
+
+            boardDiv.appendChild(input);
+        }
+    }
+}
+
+function checkCrossword(){
+
+    const inputs=document.querySelectorAll("input");
+
+    inputs.forEach(input=>{
+
+        if(input.value===input.dataset.answer){
+
             input.classList.remove("wrong");
             input.classList.add("correct");
-        }
-        else{
+
+        }else{
+
             input.classList.remove("correct");
             input.classList.add("wrong");
+
         }
 
     });
